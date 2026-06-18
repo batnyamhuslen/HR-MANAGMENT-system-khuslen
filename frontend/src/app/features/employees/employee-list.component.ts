@@ -1,14 +1,15 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
+import { ReactiveFormsModule, FormsModule, FormBuilder, Validators } from '@angular/forms';
 import { AuthService, UserProfile } from '../../services/auth.service';
 import { EmployeeService, EmployeeDto } from '../../services/employee.service';
+import { DepartmentService, DepartmentDto } from '../../services/department.service';
 
 @Component({
   selector: 'app-employee-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, FormsModule],
   templateUrl: './employee-list.component.html',
   styleUrls: ['./employee-list.component.scss']
 })
@@ -16,6 +17,7 @@ export class EmployeeListComponent implements OnInit {
   sidebarOpen = signal(false);
   currentUser = signal<UserProfile | null>(null);
   allEmployees = signal<EmployeeDto[]>([]);
+  departments = signal<DepartmentDto[]>([]);
   searchQuery = signal('');
   loading = signal(true);
   errorMessage = signal('');
@@ -23,19 +25,52 @@ export class EmployeeListComponent implements OnInit {
   totalPages = signal(0);
   totalElements = signal(0);
 
+  showModal = signal(false);
+  modalLoading = signal(false);
+  modalError = signal('');
+  employeeForm;
+
+  deleteConfirmId = signal<number | null>(null);
+
   constructor(
+    private router: Router,
+    private fb: FormBuilder,
     private authService: AuthService,
-    private employeeService: EmployeeService
-  ) {}
+    private employeeService: EmployeeService,
+    private departmentService: DepartmentService
+  ) {
+    this.employeeForm = this.fb.group({
+      employeeCode: ['', Validators.required],
+      firstName: ['', Validators.required],
+      lastName: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      phone: [''],
+      position: [''],
+      departmentId: [''],
+      salary: [''],
+      hireDate: ['', Validators.required],
+      dateOfBirth: [''],
+      username: ['', [Validators.required, Validators.minLength(3)]],
+      password: ['', [Validators.required, Validators.minLength(6)]]
+    });
+  }
 
   ngOnInit(): void {
     this.loadCurrentUser();
+    this.loadDepartments();
     this.loadEmployees();
   }
 
   private loadCurrentUser(): void {
     this.authService.getProfile().subscribe({
       next: (user) => this.currentUser.set(user),
+      error: () => {}
+    });
+  }
+
+  private loadDepartments(): void {
+    this.departmentService.getAll().subscribe({
+      next: (data) => this.departments.set(data),
       error: () => {}
     });
   }
@@ -54,6 +89,15 @@ export class EmployeeListComponent implements OnInit {
         this.errorMessage.set('Ажилтнуудын мэдээллийг ачаалахад алдаа гарлаа');
       }
     });
+  }
+
+  isHrOrAdmin(): boolean {
+    const role = this.authService.getRole();
+    const allowed = ['ADMIN', 'HR'];
+    for (let i = 0; i < allowed.length; i++) {
+      if (role === allowed[i]) return true;
+    }
+    return false;
   }
 
   filteredEmployees(): EmployeeDto[] {
@@ -87,6 +131,72 @@ export class EmployeeListComponent implements OnInit {
     }
   }
 
+  openAddModal(): void {
+    this.employeeForm.reset();
+    this.modalError.set('');
+    this.showModal.set(true);
+  }
+
+  closeModal(): void {
+    this.showModal.set(false);
+    this.modalError.set('');
+  }
+
+  onSubmitEmployee(): void {
+    if (this.employeeForm.invalid) return;
+    this.modalLoading.set(true);
+    this.modalError.set('');
+
+    const formValue = this.employeeForm.value;
+    const payload: any = {
+      employeeCode: formValue.employeeCode,
+      firstName: formValue.firstName,
+      lastName: formValue.lastName,
+      email: formValue.email,
+      phone: formValue.phone || null,
+      position: formValue.position || null,
+      departmentId: formValue.departmentId ? Number(formValue.departmentId) : null,
+      salary: formValue.salary ? Number(formValue.salary) : null,
+      hireDate: formValue.hireDate,
+      dateOfBirth: formValue.dateOfBirth || null,
+      username: formValue.username,
+      password: formValue.password
+    };
+
+    this.employeeService.createWithUser(payload).subscribe({
+      next: () => {
+        this.modalLoading.set(false);
+        this.closeModal();
+        this.loadEmployees();
+      },
+      error: (err) => {
+        this.modalLoading.set(false);
+        this.modalError.set(err.error?.message || 'Ажилтан нэмэхэд алдаа гарлаа');
+      }
+    });
+  }
+
+  confirmDelete(id: number): void {
+    this.deleteConfirmId.set(id);
+  }
+
+  cancelDelete(): void {
+    this.deleteConfirmId.set(null);
+  }
+
+  executeDelete(id: number): void {
+    this.employeeService.deleteEmployee(id).subscribe({
+      next: () => {
+        this.deleteConfirmId.set(null);
+        this.loadEmployees();
+      },
+      error: (err) => {
+        this.deleteConfirmId.set(null);
+        this.errorMessage.set(err.error?.message || 'Устгахад алдаа гарлаа');
+      }
+    });
+  }
+
   statusLabel(status: string): string {
     switch (status) {
       case 'ACTIVE': return 'Идэвхтэй';
@@ -111,5 +221,10 @@ export class EmployeeListComponent implements OnInit {
 
   closeSidebar(): void {
     this.sidebarOpen.set(false);
+  }
+
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/auth/login']);
   }
 }
