@@ -23,6 +23,9 @@
       <div class="name">{{ user.fullName }}</div>
       <div class="role">{{ user.roleLabel }}</div>
     </div>
+    <button class="logout-btn" (click)="logout()" title="Гарах">
+      <i class="ti ti-logout"></i>
+    </button>
   </div>
 </aside>
 
@@ -56,9 +59,11 @@
       <div class="toolbar-left">
         <span class="result-count">Нийт {{ totalElements() }} ажилтан</span>
       </div>
-      <button class="btn-primary">
-        <i class="ti ti-plus"></i> Шинэ ажилтан
-      </button>
+      @if (isHrOrAdmin()) {
+        <button class="btn-primary" (click)="openAddModal()">
+          <i class="ti ti-plus"></i> Ажилтан нэмэх
+        </button>
+      }
     </div>
 
     @if (errorMessage()) {
@@ -77,6 +82,9 @@
               <div class="skeleton h-6 w-28"></div>
               <div class="skeleton h-6 w-40"></div>
               <div class="skeleton h-6 w-20"></div>
+              @if (isHrOrAdmin()) {
+                <div class="skeleton h-6 w-16"></div>
+              }
             </div>
           }
         </div>
@@ -92,6 +100,9 @@
                 <th>Хэлтэс</th>
                 <th>Имэйл</th>
                 <th>Статус</th>
+                @if (isHrOrAdmin()) {
+                  <th>Үйлдэл</th>
+                }
               </tr>
             </thead>
             <tbody>
@@ -104,10 +115,29 @@
                   <td>{{ emp.departmentName || '-' }}</td>
                   <td>{{ emp.email }}</td>
                   <td><span class="badge {{ statusClass(emp.status) }}">{{ statusLabel(emp.status) }}</span></td>
+                  @if (isHrOrAdmin()) {
+                    <td>
+                      @if (deleteConfirmId() === emp.id) {
+                        <div class="confirm-delete">
+                          <span class="confirm-text">Устгах уу?</span>
+                          <button class="icon-btn confirm-yes" (click)="executeDelete(emp.id)" title="Тийм">
+                            <i class="ti ti-check"></i>
+                          </button>
+                          <button class="icon-btn confirm-no" (click)="cancelDelete()" title="Үгүй">
+                            <i class="ti ti-x"></i>
+                          </button>
+                        </div>
+                      } @else {
+                        <button class="icon-btn delete-btn" (click)="confirmDelete(emp.id)" title="Устгах">
+                          <i class="ti ti-trash"></i>
+                        </button>
+                      }
+                    </td>
+                  }
                 </tr>
               } @empty {
                 <tr>
-                  <td colspan="7" class="empty">Ажилтан олдсонгүй</td>
+                  <td [attr.colspan]="isHrOrAdmin() ? 8 : 7" class="empty">Ажилтан олдсонгүй</td>
                 </tr>
               }
             </tbody>
@@ -126,3 +156,100 @@
     </div>
   </div>
 </div>
+
+<!-- Add Employee Modal -->
+@if (showModal()) {
+  <div class="modal-backdrop" (click)="closeModal()"></div>
+  <div class="modal-container">
+    <div class="modal-header">
+      <h2><i class="ti ti-user-plus"></i> Шинэ ажилтан бүртгэх</h2>
+      <button class="modal-close" (click)="closeModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <form [formGroup]="employeeForm" (ngSubmit)="onSubmitEmployee()">
+      <div class="modal-body">
+        <h4 class="section-title"><i class="ti ti-user"></i> Ажилтаны мэдээлэл</h4>
+        <div class="form-row">
+          <div class="field">
+            <label>Ажилтаны код <span class="required">*</span></label>
+            <input type="text" formControlName="employeeCode" placeholder="EMP001">
+          </div>
+          <div class="field">
+            <label>Албан тушаал</label>
+            <input type="text" formControlName="position" placeholder="Хөгжүүлэгч">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Овог <span class="required">*</span></label>
+            <input type="text" formControlName="lastName" placeholder="Овог">
+          </div>
+          <div class="field">
+            <label>Нэр <span class="required">*</span></label>
+            <input type="text" formControlName="firstName" placeholder="Нэр">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Имэйл <span class="required">*</span></label>
+            <input type="email" formControlName="email" placeholder="name@company.mn">
+          </div>
+          <div class="field">
+            <label>Утас</label>
+            <input type="text" formControlName="phone" placeholder="99112233">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Хэлтэс</label>
+            <select formControlName="departmentId">
+              <option value="">Сонгох...</option>
+              @for (dept of departments(); track dept.id) {
+                <option [value]="dept.id">{{ dept.name }}</option>
+              }
+            </select>
+          </div>
+          <div class="field">
+            <label>Цалин</label>
+            <input type="number" formControlName="salary" placeholder="3000000">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Ажилд орсон огноо <span class="required">*</span></label>
+            <input type="date" formControlName="hireDate">
+          </div>
+          <div class="field">
+            <label>Төрсөн огноо</label>
+            <input type="date" formControlName="dateOfBirth">
+          </div>
+        </div>
+
+        <h4 class="section-title"><i class="ti ti-lock"></i> Нэвтрэх эрх</h4>
+        <div class="form-row">
+          <div class="field">
+            <label>Хэрэглэгчийн нэр <span class="required">*</span></label>
+            <input type="text" formControlName="username" placeholder="username">
+          </div>
+          <div class="field">
+            <label>Нууц үг <span class="required">*</span></label>
+            <input type="password" formControlName="password" placeholder="6 тэмдэгтээс дээш">
+          </div>
+        </div>
+
+        @if (modalError()) {
+          <div class="modal-error">{{ modalError() }}</div>
+        }
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" (click)="closeModal()">Цуцлах</button>
+        <button type="submit" class="btn-primary" [disabled]="employeeForm.invalid || modalLoading()">
+          @if (modalLoading()) {
+            <span>Хадгалж байна...</span>
+          } @else {
+            <span><i class="ti ti-device-floppy"></i> Хадгалах</span>
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+}

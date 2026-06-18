@@ -16,6 +16,7 @@
 /Users/malacca/Desktop/HR-MANAGMENT-system-khuslen/backend/src/main/java/com/hrmanagement/dto/EmployeeCreateRequest.java
 /Users/malacca/Desktop/HR-MANAGMENT-system-khuslen/backend/src/main/java/com/hrmanagement/dto/EmployeeDto.java
 /Users/malacca/Desktop/HR-MANAGMENT-system-khuslen/backend/src/main/java/com/hrmanagement/dto/EmployeeUpdateRequest.java
+/Users/malacca/Desktop/HR-MANAGMENT-system-khuslen/backend/src/main/java/com/hrmanagement/dto/EmployeeWithUserRequest.java
 /Users/malacca/Desktop/HR-MANAGMENT-system-khuslen/backend/src/main/java/com/hrmanagement/dto/LeaveBalanceDto.java
 /Users/malacca/Desktop/HR-MANAGMENT-system-khuslen/backend/src/main/java/com/hrmanagement/dto/LeaveRequestDto.java
 /Users/malacca/Desktop/HR-MANAGMENT-system-khuslen/backend/src/main/java/com/hrmanagement/dto/PendingLeaveRequestDto.java

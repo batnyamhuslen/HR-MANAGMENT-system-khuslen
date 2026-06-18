@@ -1,6 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService, UserProfile } from '../../services/auth.service';
 import { AttendanceService, AttendanceDto } from '../../services/attendance.service';
 
@@ -21,6 +21,7 @@ export class AttendanceListComponent implements OnInit {
   actionLoading = signal<number | null>(null);
 
   constructor(
+    private router: Router,
     private authService: AuthService,
     private attendanceService: AttendanceService
   ) {}
@@ -165,6 +166,11 @@ export class AttendanceListComponent implements OnInit {
 
   closeSidebar(): void {
     this.sidebarOpen.set(false);
+  }
+
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/auth/login']);
   }
 
   displayDateLabel(): string {

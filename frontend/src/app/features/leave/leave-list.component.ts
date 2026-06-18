@@ -1,6 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { AuthService, UserProfile } from '../../services/auth.service';
 import { LeaveService, LeaveRequestDto, LeaveTypeDto, LeaveBalanceDto } from '../../services/leave.service';
@@ -29,6 +29,7 @@ export class LeaveListComponent implements OnInit {
   leaveForm;
 
   constructor(
+    private router: Router,
     private fb: FormBuilder,
     private authService: AuthService,
     private leaveService: LeaveService,
@@ -182,6 +183,11 @@ export class LeaveListComponent implements OnInit {
 
   closeSidebar(): void {
     this.sidebarOpen.set(false);
+  }
+
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/auth/login']);
   }
 
   get leaveTypeName(): string {
