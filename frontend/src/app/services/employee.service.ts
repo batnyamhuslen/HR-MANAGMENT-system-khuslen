@@ -70,4 +70,8 @@ export class EmployeeService {
   deleteEmployee(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+
+  createWithUser(data: any): Observable<EmployeeDto> {
+    return this.http.post<EmployeeDto>(`${this.apiUrl}/with-user`, data);
+  }
 }

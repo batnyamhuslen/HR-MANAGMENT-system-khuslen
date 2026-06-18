@@ -29,6 +29,7 @@ com/hrmanagement/repository/UserRepository.class
 com/hrmanagement/repository/EmployeeRepository.class
 com/hrmanagement/dto/AuthResponse.class
 com/hrmanagement/HrManagementApplication.class
+com/hrmanagement/dto/EmployeeWithUserRequest.class
 com/hrmanagement/dto/LeaveBalanceDto.class
 com/hrmanagement/exception/GlobalExceptionHandler.class
 com/hrmanagement/service/DepartmentService.class

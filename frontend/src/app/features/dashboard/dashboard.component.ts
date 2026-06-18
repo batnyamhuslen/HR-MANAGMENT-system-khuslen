@@ -1,6 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService, UserProfile } from '../../services/auth.service';
 import { DashboardService, DashboardStats, SalaryTrendPoint } from '../../services/dashboard.service';
 import { LeaveService, PendingLeaveRequest } from '../../services/leave.service';
@@ -24,6 +24,7 @@ export class DashboardComponent implements OnInit {
   errorMessage = signal('');
 
   constructor(
+    private router: Router,
     private authService: AuthService,
     private dashboardService: DashboardService,
     private leaveService: LeaveService
@@ -87,5 +88,10 @@ export class DashboardComponent implements OnInit {
 
   isLastMonth(index: number): boolean {
     return index === this.salaryTrend().length - 1;
+  }
+
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/auth/login']);
   }
 }

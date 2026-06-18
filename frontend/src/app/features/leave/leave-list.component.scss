@@ -78,6 +78,21 @@
 .user-info .name { font-size: 0.875rem; font-weight: 500; }
 .user-info .role { font-size: 0.75rem; color: #94a3b8; }
 
+.logout-btn {
+  background: none;
+  border: none;
+  color: #64748b;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  margin-left: auto;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+}
+
+.logout-btn:hover { color: #ef4444; }
+
 .backdrop {
   display: none;
   position: fixed;
