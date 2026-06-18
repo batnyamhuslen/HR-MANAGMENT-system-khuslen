@@ -7,6 +7,7 @@
 /Users/malacca/Desktop/HR-MANAGMENT-system-khuslen/backend/src/main/java/com/hrmanagement/controller/DepartmentController.java
 /Users/malacca/Desktop/HR-MANAGMENT-system-khuslen/backend/src/main/java/com/hrmanagement/controller/EmployeeController.java
 /Users/malacca/Desktop/HR-MANAGMENT-system-khuslen/backend/src/main/java/com/hrmanagement/controller/LeaveController.java
+/Users/malacca/Desktop/HR-MANAGMENT-system-khuslen/backend/src/main/java/com/hrmanagement/controller/LeaveTypeController.java
 /Users/malacca/Desktop/HR-MANAGMENT-system-khuslen/backend/src/main/java/com/hrmanagement/dto/AttendanceDto.java
 /Users/malacca/Desktop/HR-MANAGMENT-system-khuslen/backend/src/main/java/com/hrmanagement/dto/AuthRequest.java
 /Users/malacca/Desktop/HR-MANAGMENT-system-khuslen/backend/src/main/java/com/hrmanagement/dto/AuthResponse.java

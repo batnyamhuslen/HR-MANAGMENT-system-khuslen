@@ -35,6 +35,7 @@ com/hrmanagement/service/DepartmentService.class
 com/hrmanagement/dto/LeaveRequestDto.class
 com/hrmanagement/controller/DepartmentController.class
 com/hrmanagement/security/JwtAuthenticationFilter.class
+com/hrmanagement/controller/LeaveTypeController.class
 com/hrmanagement/security/JwtUtil.class
 com/hrmanagement/controller/AuthController.class
 com/hrmanagement/controller/EmployeeController.class
