@@ -1,0 +1,149 @@
+<!-- Sidebar -->
+<aside class="sidebar" [class.open]="sidebarOpen()">
+  <div class="sidebar-header">
+    <i class="ti ti-briefcase"></i>
+    <span>HR CORE</span>
+  </div>
+  <nav class="sidebar-nav">
+    <a routerLink="/dashboard" routerLinkActive="active" (click)="closeSidebar()">
+      <i class="ti ti-dashboard"></i><span>Хянах самбар</span>
+    </a>
+    <a routerLink="/employees" routerLinkActive="active" (click)="closeSidebar()">
+      <i class="ti ti-users"></i><span>Ажилтнууд</span>
+    </a>
+    <a routerLink="/attendance" routerLinkActive="active" (click)="closeSidebar()">
+      <i class="ti ti-calendar-check"></i><span>Ирц</span>
+    </a>
+    <a routerLink="/leave" routerLinkActive="active" (click)="closeSidebar()">
+      <i class="ti ti-calendar-off"></i><span>Чөлөө</span>
+    </a>
+  </nav>
+  <div class="sidebar-footer" *ngIf="currentUser() as user">
+    <div class="avatar">{{ user.initials }}</div>
+    <div class="user-info">
+      <div class="name">{{ user.fullName }}</div>
+      <div class="role">{{ user.roleLabel }}</div>
+    </div>
+  </div>
+</aside>
+
+<!-- Backdrop -->
+<div class="backdrop" *ngIf="sidebarOpen()" (click)="closeSidebar()"></div>
+
+<!-- Main -->
+<div class="main">
+  <!-- Topbar -->
+  <header class="topbar">
+    <button class="hamburger" (click)="toggleSidebar()">
+      <i class="ti ti-menu-2"></i>
+    </button>
+    <div class="search-box">
+      <i class="ti ti-search"></i>
+      <input type="text" placeholder="Хайх...">
+    </div>
+    <div class="topbar-right">
+      <button class="notif-btn">
+        <i class="ti ti-bell"></i>
+        <span class="notif-dot"></span>
+      </button>
+      <div class="mobile-avatar" *ngIf="currentUser() as user">{{ user.initials }}</div>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <div class="content">
+    <div class="page-heading">
+      <h1>Тавтай морил 👋</h1>
+      <p>Өнөөдрийн байдлаарх ерөнхий мэдээлэл</p>
+    </div>
+
+    <!-- Stat Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon blue"><i class="ti ti-users"></i></div>
+        <div class="stat-body">
+          <div class="stat-label">Нийт ажилтан</div>
+          @if (statsLoading()) {
+            <div class="skeleton h-8 w-20"></div>
+          } @else {
+            <div class="stat-value">{{ stats()?.totalEmployees || 0 }}</div>
+          }
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon amber"><i class="ti ti-calendar-check"></i></div>
+        <div class="stat-body">
+          <div class="stat-label">Өнөөдрийн ирц</div>
+          @if (statsLoading()) {
+            <div class="skeleton h-8 w-20"></div>
+          } @else {
+            <div class="stat-value">{{ stats()?.attendanceRatePercent || 0 }}%</div>
+          }
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon rose"><i class="ti ti-calendar-off"></i></div>
+        <div class="stat-body">
+          <div class="stat-label">Чөлөөтэй байгаа</div>
+          @if (statsLoading()) {
+            <div class="skeleton h-8 w-20"></div>
+          } @else {
+            <div class="stat-value">{{ stats()?.employeesOnLeaveToday || 0 }}</div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts + Pending Leaves -->
+    <div class="content-grid">
+      <!-- Salary Chart -->
+      <div class="card chart-card">
+        <h3>Цалингийн чиг хандлага</h3>
+        @if (chartLoading()) {
+          <div class="skeleton h-48 w-full"></div>
+        } @else {
+          <div class="chart">
+            @for (point of salaryTrend(); track $index) {
+              <div class="bar-col">
+                <div class="bar" [class.bar-highlight]="isLastMonth($index)"
+                     [style.height.%]="barHeightPercent(point)"></div>
+                <span class="bar-label">{{ point.month }}</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Pending Leaves -->
+      <div class="card leaves-card">
+        <div class="card-header">
+          <h3>Хүлээгдэж буй чөлөө</h3>
+          <a routerLink="/leave" class="view-all">Бүгдийг үзэх →</a>
+        </div>
+        @if (leavesLoading()) {
+          @for (_ of [1,2,3]; track _) {
+            <div class="skeleton h-16 w-full mb-3"></div>
+          }
+        } @else if (pendingLeaves().length === 0) {
+          <div class="empty-state">
+            <i class="ti ti-check"></i>
+            <p>Хүлээгдэж буй чөлөө байхгүй</p>
+          </div>
+        } @else {
+          @for (leave of pendingLeaves(); track leave.id) {
+            <div class="leave-item">
+              <div class="leave-avatar">{{ leave.initials }}</div>
+              <div class="leave-info">
+                <div class="leave-name">{{ leave.employeeName }}</div>
+                <div class="leave-type">{{ leave.leaveTypeName }} · {{ leave.totalDays }} өдөр</div>
+              </div>
+              <button class="approve-btn" (click)="approveLeave(leave.id)" title="Зөвшөөрөх">
+                <i class="ti ti-check"></i>
+              </button>
+            </div>
+          }
+        }
+      </div>
+    </div>
+  </div>
+</div>
