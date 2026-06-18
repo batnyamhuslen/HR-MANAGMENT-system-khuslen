@@ -1,6 +1,7 @@
 package com.hrmanagement.controller;
 
 import com.hrmanagement.dto.DashboardStatsDto;
+import com.hrmanagement.dto.EmployeeDashboardStatsDto;
 import com.hrmanagement.dto.SalaryTrendPointDto;
 import com.hrmanagement.service.DashboardService;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,12 @@ public class DashboardController {
     @PreAuthorize("hasAnyRole('ADMIN', 'HR', 'MANAGER')")
     public ResponseEntity<DashboardStatsDto> getStats() {
         return ResponseEntity.ok(dashboardService.getDashboardStats());
+    }
+
+    @GetMapping("/my-stats")
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    public ResponseEntity<EmployeeDashboardStatsDto> getMyStats() {
+        return ResponseEntity.ok(dashboardService.getEmployeeDashboardStats());
     }
 
     @GetMapping("/salary-trend")

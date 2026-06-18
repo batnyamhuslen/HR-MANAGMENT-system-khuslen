@@ -8,6 +8,13 @@ export interface DashboardStats {
   employeesOnLeaveToday: number;
 }
 
+export interface EmployeeDashboardStats {
+  totalEmployees: number;
+  myAttendanceRatePercent: number;
+  usedLeaveDays: number;
+  remainingLeaveDays: number;
+}
+
 export interface SalaryTrendPoint {
   month: string;
   amount: number;
@@ -21,6 +28,10 @@ export class DashboardService {
 
   getStats(): Observable<DashboardStats> {
     return this.http.get<DashboardStats>(`${this.apiUrl}/stats`);
+  }
+
+  getMyStats(): Observable<EmployeeDashboardStats> {
+    return this.http.get<EmployeeDashboardStats>(`${this.apiUrl}/my-stats`);
   }
 
   getSalaryTrend(): Observable<SalaryTrendPoint[]> {
