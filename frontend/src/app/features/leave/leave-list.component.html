@@ -1,0 +1,206 @@
+<aside class="sidebar" [class.open]="sidebarOpen()">
+  <div class="sidebar-header">
+    <i class="ti ti-briefcase"></i>
+    <span>HR CORE</span>
+  </div>
+  <nav class="sidebar-nav">
+    <a routerLink="/dashboard" routerLinkActive="active" (click)="closeSidebar()">
+      <i class="ti ti-dashboard"></i><span>Хянах самбар</span>
+    </a>
+    <a routerLink="/employees" routerLinkActive="active" (click)="closeSidebar()">
+      <i class="ti ti-users"></i><span>Ажилтнууд</span>
+    </a>
+    <a routerLink="/attendance" routerLinkActive="active" (click)="closeSidebar()">
+      <i class="ti ti-calendar-check"></i><span>Ирц</span>
+    </a>
+    <a routerLink="/leave" routerLinkActive="active" (click)="closeSidebar()">
+      <i class="ti ti-calendar-off"></i><span>Чөлөө</span>
+    </a>
+  </nav>
+  <div class="sidebar-footer" *ngIf="currentUser() as user">
+    <div class="avatar">{{ user.initials }}</div>
+    <div class="user-info">
+      <div class="name">{{ user.fullName }}</div>
+      <div class="role">{{ user.roleLabel }}</div>
+    </div>
+  </div>
+</aside>
+
+<div class="backdrop" *ngIf="sidebarOpen()" (click)="closeSidebar()"></div>
+
+<div class="main">
+  <header class="topbar">
+    <button class="hamburger" (click)="toggleSidebar()">
+      <i class="ti ti-menu-2"></i>
+    </button>
+    <div class="search-box">
+      <i class="ti ti-search"></i>
+      <input type="text" placeholder="Хайх...">
+    </div>
+    <div class="topbar-right">
+      <button class="notif-btn">
+        <i class="ti ti-bell"></i>
+        <span class="notif-dot"></span>
+      </button>
+      <div class="mobile-avatar" *ngIf="currentUser() as user">{{ user.initials }}</div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="page-heading">
+      <h1>Чөлөөний бүртгэл</h1>
+      <p>Чөлөө хүсэх, хүсэлтүүдийг харах</p>
+    </div>
+
+    <div class="content-grid">
+      <!-- Leave Request Form -->
+      <div class="card">
+        <h3><i class="ti ti-file-plus"></i> Чөлөө хүсэх</h3>
+        <form [formGroup]="leaveForm" (ngSubmit)="onSubmit()">
+          <div class="field">
+            <label>Ажилтан</label>
+            <select formControlName="employeeId">
+              <option value="">Сонгох...</option>
+              @for (emp of employees(); track emp.id) {
+                <option [value]="emp.id">{{ emp.lastName }} {{ emp.firstName }}</option>
+              }
+            </select>
+          </div>
+          <div class="field">
+            <label>Чөлөөний төрөл</label>
+            <select formControlName="leaveTypeId">
+              <option value="">Сонгох...</option>
+              @for (lt of leaveTypes(); track lt.id) {
+                <option [value]="lt.id">{{ lt.name }} ({{ lt.defaultDaysPerYear }} өдөр)</option>
+              }
+            </select>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Эхлэх огноо</label>
+              <input type="date" formControlName="startDate">
+            </div>
+            <div class="field">
+              <label>Дуусах огноо</label>
+              <input type="date" formControlName="endDate">
+            </div>
+          </div>
+          <div class="field">
+            <label>Шалтгаан</label>
+            <textarea formControlName="reason" rows="3" placeholder="Чөлөө авах шалтгаанаа бичнэ үү..."></textarea>
+          </div>
+          @if (errorMessage()) {
+            <p class="form-error">{{ errorMessage() }}</p>
+          }
+          @if (successMessage()) {
+            <p class="form-success">{{ successMessage() }}</p>
+          }
+          <button type="submit" class="btn-primary" [disabled]="leaveForm.invalid || submitting()">
+            @if (submitting()) {
+              <span>Илгээж байна...</span>
+            } @else {
+              <span><i class="ti ti-send"></i> Хүсэлт илгээх</span>
+            }
+          </button>
+        </form>
+      </div>
+
+      <!-- Balances -->
+      <div class="card">
+        <h3><i class="ti ti-wallet"></i> Чөлөөний үлдэгдэл</h3>
+        @if (balances().length === 0) {
+          <div class="empty-state">
+            <i class="ti ti-info-circle"></i>
+            <p>Чөлөөний үлдэгдэл байхгүй</p>
+          </div>
+        } @else {
+          <div class="balance-list">
+            @for (b of balances(); track b.id) {
+              <div class="balance-item">
+                <div class="balance-left">
+                  <span class="balance-type">{{ b.leaveTypeName }}</span>
+                  <span class="balance-year">{{ b.year }}</span>
+                </div>
+                <div class="balance-right">
+                  <div class="balance-bar">
+                    <div class="balance-fill" [style.width.%]="b.totalAllocated > 0 ? ((b.totalAllocated - b.remaining) / b.totalAllocated * 100) : 0"></div>
+                  </div>
+                  <span class="balance-remaining">{{ b.remaining }}/{{ b.totalAllocated }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Leave Requests Table -->
+    <div class="card mt-4">
+      <h3><i class="ti ti-list"></i> Сүүлийн хүсэлтүүд</h3>
+      @if (loading()) {
+        <div class="table-skeleton">
+          @for (_ of [1,2,3]; track _) {
+            <div class="skeleton-row">
+              <div class="skeleton h-6 w-12"></div>
+              <div class="skeleton h-6 w-28"></div>
+              <div class="skeleton h-6 w-24"></div>
+              <div class="skeleton h-6 w-20"></div>
+              <div class="skeleton h-6 w-20"></div>
+              <div class="skeleton h-6 w-12"></div>
+              <div class="skeleton h-6 w-24"></div>
+              <div class="skeleton h-6 w-16"></div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Ажилтан</th>
+                <th>Чөлөөний төрөл</th>
+                <th>Эхлэх</th>
+                <th>Дуусах</th>
+                <th>Өдөр</th>
+                <th>Статус</th>
+                <th>Үйлдэл</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (req of requests(); track req.id; let i = $index) {
+                <tr>
+                  <td>{{ i + 1 }}</td>
+                  <td class="emp-name">{{ req.employeeName }}</td>
+                  <td>{{ req.leaveTypeName }}</td>
+                  <td>{{ req.startDate }}</td>
+                  <td>{{ req.endDate }}</td>
+                  <td class="days">{{ req.totalDays }}</td>
+                  <td><span class="badge {{ statusClass(req.status) }}">{{ statusLabel(req.status) }}</span></td>
+                  <td>
+                    @if (req.status === 'PENDING' && isHrOrAdmin()) {
+                      <div class="action-group">
+                        <button class="icon-btn approve" (click)="approveRequest(req.id)" [disabled]="actionLoading() === req.id" title="Зөвшөөрөх">
+                          <i class="ti ti-check"></i>
+                        </button>
+                        <button class="icon-btn reject" (click)="rejectRequest(req.id)" [disabled]="actionLoading() === req.id" title="Татгалзах">
+                          <i class="ti ti-x"></i>
+                        </button>
+                      </div>
+                    } @else {
+                      <span class="no-action">-</span>
+                    }
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="8" class="empty">Чөлөөний хүсэлт байхгүй</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  </div>
+</div>

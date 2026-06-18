@@ -1,0 +1,132 @@
+<aside class="sidebar" [class.open]="sidebarOpen()">
+  <div class="sidebar-header">
+    <i class="ti ti-briefcase"></i>
+    <span>HR CORE</span>
+  </div>
+  <nav class="sidebar-nav">
+    <a routerLink="/dashboard" routerLinkActive="active" (click)="closeSidebar()">
+      <i class="ti ti-dashboard"></i><span>Хянах самбар</span>
+    </a>
+    <a routerLink="/employees" routerLinkActive="active" (click)="closeSidebar()">
+      <i class="ti ti-users"></i><span>Ажилтнууд</span>
+    </a>
+    <a routerLink="/attendance" routerLinkActive="active" (click)="closeSidebar()">
+      <i class="ti ti-calendar-check"></i><span>Ирц</span>
+    </a>
+    <a routerLink="/leave" routerLinkActive="active" (click)="closeSidebar()">
+      <i class="ti ti-calendar-off"></i><span>Чөлөө</span>
+    </a>
+  </nav>
+  <div class="sidebar-footer" *ngIf="currentUser() as user">
+    <div class="avatar">{{ user.initials }}</div>
+    <div class="user-info">
+      <div class="name">{{ user.fullName }}</div>
+      <div class="role">{{ user.roleLabel }}</div>
+    </div>
+  </div>
+</aside>
+
+<div class="backdrop" *ngIf="sidebarOpen()" (click)="closeSidebar()"></div>
+
+<div class="main">
+  <header class="topbar">
+    <button class="hamburger" (click)="toggleSidebar()">
+      <i class="ti ti-menu-2"></i>
+    </button>
+    <div class="topbar-title">Өнөөдрийн ирц</div>
+    <div class="topbar-right">
+      <button class="notif-btn">
+        <i class="ti ti-bell"></i>
+        <span class="notif-dot"></span>
+      </button>
+      <div class="mobile-avatar" *ngIf="currentUser() as user">{{ user.initials }}</div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="page-heading">
+      <h1>Ирцийн бүртгэл</h1>
+      <p>Ажилтнуудын өдөр тутмын ирцийн мэдээлэл</p>
+    </div>
+
+    <div class="date-nav">
+      <button class="date-btn" (click)="prevDay()">
+        <i class="ti ti-chevron-left"></i>
+      </button>
+      <div class="date-display">
+        <i class="ti ti-calendar"></i>
+        <span>{{ displayDateLabel() }}</span>
+      </div>
+      <button class="date-btn" (click)="nextDay()">
+        <i class="ti ti-chevron-right"></i>
+      </button>
+      @if (!isToday()) {
+        <button class="today-btn" (click)="goToday()">Өнөөдөр</button>
+      }
+    </div>
+
+    @if (errorMessage()) {
+      <div class="error-banner">{{ errorMessage() }}</div>
+    }
+
+    <div class="card">
+      @if (loading()) {
+        <div class="table-skeleton">
+          @for (_ of [1,2,3,4]; track _) {
+            <div class="skeleton-row">
+              <div class="skeleton h-6 w-12"></div>
+              <div class="skeleton h-6 w-36"></div>
+              <div class="skeleton h-6 w-20"></div>
+              <div class="skeleton h-6 w-20"></div>
+              <div class="skeleton h-6 w-24"></div>
+              <div class="skeleton h-6 w-16"></div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Ажилтан</th>
+                <th>Ирсэн цаг</th>
+                <th>Гарсан цаг</th>
+                <th>Статус</th>
+                <th>Үйлдэл</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (rec of records(); track rec.id; let i = $index) {
+                <tr>
+                  <td>{{ i + 1 }}</td>
+                  <td class="emp-name">{{ rec.employeeName }}</td>
+                  <td>{{ formatTime(rec.checkInTime) }}</td>
+                  <td>{{ formatTime(rec.checkOutTime) }}</td>
+                  <td><span class="badge {{ statusClass(rec.status) }}">{{ statusLabel(rec.status) }}</span></td>
+                  <td>
+                    @if (!rec.checkInTime) {
+                      <button class="action-btn checkin" (click)="checkIn(rec.employeeId)" [disabled]="actionLoading() === rec.employeeId">
+                        <i class="ti ti-login"></i> {{ actionLoading() === rec.employeeId ? '...' : 'Ирсэн' }}
+                      </button>
+                    } @else if (!rec.checkOutTime) {
+                      <button class="action-btn checkout" (click)="checkOut(rec.employeeId)" [disabled]="actionLoading() === rec.employeeId">
+                        <i class="ti ti-logout"></i> {{ actionLoading() === rec.employeeId ? '...' : 'Гарсан' }}
+                      </button>
+                    } @else {
+                      <span class="done-label">Бүртгэгдсэн</span>
+                    }
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="6" class="empty">Энэ өдрийн ирцийн мэдээлэл байхгүй</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  </div>
+</div>
