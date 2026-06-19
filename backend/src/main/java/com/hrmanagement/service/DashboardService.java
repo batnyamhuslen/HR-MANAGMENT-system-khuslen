@@ -7,6 +7,7 @@ import com.hrmanagement.entity.Attendance;
 import com.hrmanagement.entity.Employee;
 import com.hrmanagement.entity.LeaveBalance;
 import com.hrmanagement.entity.User;
+import com.hrmanagement.enums.UserRole;
 import com.hrmanagement.repository.AttendanceRepository;
 import com.hrmanagement.repository.DashboardRepository;
 import com.hrmanagement.repository.EmployeeRepository;
@@ -43,16 +44,20 @@ public class DashboardService {
         this.userRepository = userRepository;
     }
 
-    public DashboardStatsDto getDashboardStats() {
+    public DashboardStatsDto getDashboardStats(UserRole role) {
         LocalDate today = LocalDate.now();
 
         long totalEmployees = dashboardRepository.countActiveEmployees();
-        long presentOrLateCount = dashboardRepository.countTodayPresentOrLate(today);
-        long employeesOnLeaveToday = dashboardRepository.countDistinctEmployeesOnLeaveToday(today);
 
-        double attendanceRatePercent = 0.0;
-        if (totalEmployees > 0) {
-            attendanceRatePercent = Math.round((double) presentOrLateCount / totalEmployees * 1000.0) / 10.0;
+        Double attendanceRatePercent = null;
+        Long employeesOnLeaveToday = null;
+
+        if (role == UserRole.ADMIN || role == UserRole.HR) {
+            long presentOrLateCount = dashboardRepository.countTodayPresentOrLate(today);
+            if (totalEmployees > 0) {
+                attendanceRatePercent = Math.round((double) presentOrLateCount / totalEmployees * 1000.0) / 10.0;
+            }
+            employeesOnLeaveToday = dashboardRepository.countDistinctEmployeesOnLeaveToday(today);
         }
 
         return new DashboardStatsDto(totalEmployees, attendanceRatePercent, employeesOnLeaveToday);

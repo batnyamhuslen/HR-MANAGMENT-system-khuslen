@@ -212,6 +212,11 @@
   margin-bottom: 1.5rem;
 }
 
+.stats-grid.single-card {
+  grid-template-columns: 1fr;
+  max-width: 400px;
+}
+
 .stat-card {
   background: #fff;
   border: 1px solid #e5e7eb;

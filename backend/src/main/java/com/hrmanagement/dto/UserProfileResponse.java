@@ -14,6 +14,7 @@ public class UserProfileResponse {
     private String fullName;
     private String initials;
     private String roleLabel;
+    private String role;
 
     public UserProfileResponse() {}
 
@@ -30,6 +31,7 @@ public class UserProfileResponse {
             this.initials = "";
         }
         this.roleLabel = ROLE_LABELS.getOrDefault(role, role);
+        this.role = role;
     }
 
     public String getFullName() { return fullName; }
@@ -48,4 +50,6 @@ public class UserProfileResponse {
     public void setInitials(String initials) { this.initials = initials; }
     public String getRoleLabel() { return roleLabel; }
     public void setRoleLabel(String roleLabel) { this.roleLabel = roleLabel; }
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
 }

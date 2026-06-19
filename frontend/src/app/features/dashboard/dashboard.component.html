@@ -61,7 +61,7 @@
     </div>
 
     <!-- Stat Cards -->
-    <div class="stats-grid">
+    <div class="stats-grid" [class.single-card]="!canViewAttendanceStats()">
       <div class="stat-card">
         <div class="stat-icon blue"><i class="ti ti-users"></i></div>
         <div class="stat-body">
@@ -73,28 +73,30 @@
           }
         </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon amber"><i class="ti ti-calendar-check"></i></div>
-        <div class="stat-body">
-          <div class="stat-label">Өнөөдрийн ирц</div>
-          @if (statsLoading()) {
-            <div class="skeleton h-8 w-20"></div>
-          } @else {
-            <div class="stat-value">{{ stats()?.attendanceRatePercent || 0 }}%</div>
-          }
+      @if (canViewAttendanceStats()) {
+        <div class="stat-card">
+          <div class="stat-icon amber"><i class="ti ti-calendar-check"></i></div>
+          <div class="stat-body">
+            <div class="stat-label">Өнөөдрийн ирц</div>
+            @if (statsLoading()) {
+              <div class="skeleton h-8 w-20"></div>
+            } @else {
+              <div class="stat-value">{{ stats()?.attendanceRatePercent || 0 }}%</div>
+            }
+          </div>
         </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon rose"><i class="ti ti-calendar-off"></i></div>
-        <div class="stat-body">
-          <div class="stat-label">Чөлөөтэй байгаа</div>
-          @if (statsLoading()) {
-            <div class="skeleton h-8 w-20"></div>
-          } @else {
-            <div class="stat-value">{{ stats()?.employeesOnLeaveToday || 0 }}</div>
-          }
+        <div class="stat-card">
+          <div class="stat-icon rose"><i class="ti ti-calendar-off"></i></div>
+          <div class="stat-body">
+            <div class="stat-label">Чөлөөтэй байгаа</div>
+            @if (statsLoading()) {
+              <div class="skeleton h-8 w-20"></div>
+            } @else {
+              <div class="stat-value">{{ stats()?.employeesOnLeaveToday || 0 }}</div>
+            }
+          </div>
         </div>
-      </div>
+      }
     </div>
 
     <!-- Charts + Pending Leaves -->
