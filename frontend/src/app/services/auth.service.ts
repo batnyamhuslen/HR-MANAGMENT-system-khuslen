@@ -14,6 +14,7 @@ export interface UserProfile {
   fullName: string;
   initials: string;
   roleLabel: string;
+  role: string;
 }
 
 @Injectable({ providedIn: 'root' })

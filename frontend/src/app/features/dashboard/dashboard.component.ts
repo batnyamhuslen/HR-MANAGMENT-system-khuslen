@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService, UserProfile } from '../../services/auth.service';
@@ -24,6 +24,10 @@ export class DashboardComponent implements OnInit {
   leavesLoading = signal(true);
   errorMessage = signal('');
   isManagementRole = signal(false);
+  canViewAttendanceStats = computed(() => {
+    const role = this.currentUser()?.role;
+    return role === 'ADMIN' || role === 'HR';
+  });
 
   constructor(
     private router: Router,
@@ -45,7 +49,7 @@ export class DashboardComponent implements OnInit {
         const managementRoles = ['ADMIN', 'HR', 'MANAGER'];
         let isMgmt = false;
         for (let i = 0; i < managementRoles.length; i++) {
-          if (user.roleLabel === managementRoles[i]) {
+          if (user.role === managementRoles[i]) {
             isMgmt = true;
             break;
           }
@@ -58,17 +62,10 @@ export class DashboardComponent implements OnInit {
   }
 
   private loadStats(): void {
-    if (this.isManagementRole()) {
-      this.dashboardService.getStats().subscribe({
-        next: (data) => { this.stats.set(data); this.statsLoading.set(false); },
-        error: () => { this.statsLoading.set(false); this.errorMessage.set('Статистик мэдээлэл ачаалахад алдаа гарлаа'); }
-      });
-    } else {
-      this.dashboardService.getMyStats().subscribe({
-        next: (data) => { this.myStats.set(data); this.statsLoading.set(false); },
-        error: () => { this.statsLoading.set(false); this.errorMessage.set('Статистик мэдээлэл ачаалахад алдаа гарлаа'); }
-      });
-    }
+    this.dashboardService.getStats().subscribe({
+      next: (data) => { this.stats.set(data); this.statsLoading.set(false); },
+      error: () => { this.statsLoading.set(false); this.errorMessage.set('Статистик мэдээлэл ачаалахад алдаа гарлаа'); }
+    });
   }
 
   private loadSalaryTrend(): void {
