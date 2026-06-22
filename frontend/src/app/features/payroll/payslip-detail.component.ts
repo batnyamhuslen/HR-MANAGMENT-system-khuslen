@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { AuthService, UserProfile } from '../../services/auth.service';
 import { PayrollService, PayrollRecordDto } from '../../services/payroll.service';
+import { NotificationBellComponent } from '../../shared/components/notification-bell/notification-bell.component';
 
 @Component({
   selector: 'app-payslip-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, NotificationBellComponent],
   templateUrl: './payslip-detail.component.html',
   styleUrls: ['./payslip-detail.component.scss']
 })

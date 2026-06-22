@@ -5,6 +5,8 @@ import com.hrmanagement.dto.LeaveRequestDto;
 import com.hrmanagement.dto.PendingLeaveRequestDto;
 import com.hrmanagement.entity.*;
 import com.hrmanagement.enums.LeaveRequestStatus;
+import com.hrmanagement.enums.NotificationType;
+import com.hrmanagement.enums.UserRole;
 import com.hrmanagement.repository.*;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -13,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -23,17 +26,20 @@ public class LeaveService {
     private final LeaveTypeRepository leaveTypeRepository;
     private final EmployeeRepository employeeRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     public LeaveService(LeaveRequestRepository leaveRequestRepository,
                         LeaveBalanceRepository leaveBalanceRepository,
                         LeaveTypeRepository leaveTypeRepository,
                         EmployeeRepository employeeRepository,
-                        UserRepository userRepository) {
+                        UserRepository userRepository,
+                        NotificationService notificationService) {
         this.leaveRequestRepository = leaveRequestRepository;
         this.leaveBalanceRepository = leaveBalanceRepository;
         this.leaveTypeRepository = leaveTypeRepository;
         this.employeeRepository = employeeRepository;
         this.userRepository = userRepository;
+        this.notificationService = notificationService;
     }
 
     @Transactional
@@ -66,7 +72,24 @@ public class LeaveService {
         leaveRequest.setReason(reason);
         leaveRequest.setStatus(LeaveRequestStatus.PENDING);
 
-        return toDto(leaveRequestRepository.save(leaveRequest));
+        LeaveRequest saved = leaveRequestRepository.save(leaveRequest);
+
+        List<Long> recipientIds = new ArrayList<>();
+        List<User> adminsAndHr = userRepository.findByRoleIn(List.of(UserRole.ADMIN, UserRole.HR));
+        for (User u : adminsAndHr) {
+            recipientIds.add(u.getId());
+        }
+        if (employee.getManager() != null && employee.getManager().getUser() != null) {
+            recipientIds.add(employee.getManager().getUser().getId());
+        }
+
+        String employeeName = employee.getFirstName() + " " + employee.getLastName();
+        String message = employeeName + " " + leaveType.getName() + " чөлөө хүссэн (" + totalDays + " хоног)";
+        notificationService.createNotificationForUsers(recipientIds, NotificationType.LEAVE_SUBMITTED,
+                "Шинэ чөлөөний хүсэлт", message,
+                "/leave/" + saved.getId(), saved.getId());
+
+        return toDto(saved);
     }
 
     @Transactional
@@ -99,7 +122,19 @@ public class LeaveService {
         balance.setUsed(balance.getUsed() + leaveRequest.getTotalDays());
 
         leaveBalanceRepository.save(balance);
-        return toDto(leaveRequestRepository.save(leaveRequest));
+        LeaveRequest saved = leaveRequestRepository.save(leaveRequest);
+
+        Employee emp = saved.getEmployee();
+        if (emp.getUser() != null) {
+            String start = saved.getStartDate().toString();
+            String end = saved.getEndDate().toString();
+            String message = "Таны " + start + "-" + end + " хүртэлх чөлөөг баталлаа";
+            notificationService.createNotification(emp.getUser().getId(), NotificationType.LEAVE_APPROVED,
+                    "Чөлөө баталгаажлаа", message,
+                    "/leave/" + saved.getId(), saved.getId());
+        }
+
+        return toDto(saved);
     }
 
     @Transactional
@@ -118,7 +153,19 @@ public class LeaveService {
         leaveRequest.setApprovedBy(approver);
         leaveRequest.setApprovedAt(LocalDateTime.now());
 
-        return toDto(leaveRequestRepository.save(leaveRequest));
+        LeaveRequest saved = leaveRequestRepository.save(leaveRequest);
+
+        Employee emp = saved.getEmployee();
+        if (emp.getUser() != null) {
+            String start = saved.getStartDate().toString();
+            String end = saved.getEndDate().toString();
+            String message = "Таны " + start + "-" + end + " хүртэлх чөлөөний хүсэлтийг татгалзлаа";
+            notificationService.createNotification(emp.getUser().getId(), NotificationType.LEAVE_REJECTED,
+                    "Чөлөө татгалзлаа", message,
+                    "/leave/" + saved.getId(), saved.getId());
+        }
+
+        return toDto(saved);
     }
 
     @Transactional

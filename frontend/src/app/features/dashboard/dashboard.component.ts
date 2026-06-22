@@ -4,11 +4,12 @@ import { Router, RouterModule } from '@angular/router';
 import { AuthService, UserProfile } from '../../services/auth.service';
 import { DashboardService, DashboardStats, EmployeeDashboardStats, SalaryTrendPoint } from '../../services/dashboard.service';
 import { LeaveService, PendingLeaveRequest } from '../../services/leave.service';
+import { NotificationBellComponent } from '../../shared/components/notification-bell/notification-bell.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, NotificationBellComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })

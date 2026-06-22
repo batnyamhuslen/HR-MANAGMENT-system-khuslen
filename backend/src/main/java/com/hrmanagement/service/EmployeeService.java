@@ -7,6 +7,8 @@ import com.hrmanagement.entity.Department;
 import com.hrmanagement.entity.Employee;
 import com.hrmanagement.entity.User;
 import com.hrmanagement.enums.EmployeeStatus;
+import com.hrmanagement.enums.NotificationType;
+import com.hrmanagement.enums.UserRole;
 import com.hrmanagement.repository.DepartmentRepository;
 import com.hrmanagement.repository.EmployeeRepository;
 import com.hrmanagement.repository.UserRepository;
@@ -14,19 +16,25 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final DepartmentRepository departmentRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     public EmployeeService(EmployeeRepository employeeRepository,
                            DepartmentRepository departmentRepository,
-                           UserRepository userRepository) {
+                           UserRepository userRepository,
+                           NotificationService notificationService) {
         this.employeeRepository = employeeRepository;
         this.departmentRepository = departmentRepository;
         this.userRepository = userRepository;
+        this.notificationService = notificationService;
     }
 
     public Page<EmployeeDto> search(String search, Long departmentId, String status, Pageable pageable) {
@@ -76,12 +84,29 @@ public class EmployeeService {
             emp.setUser(user);
         }
 
-        return toDto(employeeRepository.save(emp));
+        Employee saved = employeeRepository.save(emp);
+
+        List<User> adminsAndHr = userRepository.findByRoleIn(List.of(UserRole.ADMIN, UserRole.HR));
+        List<Long> recipientIds = new ArrayList<>();
+        for (User u : adminsAndHr) {
+            recipientIds.add(u.getId());
+        }
+        if (!recipientIds.isEmpty()) {
+            String employeeName = saved.getFirstName() + " " + saved.getLastName();
+            String deptName = saved.getDepartment() != null ? saved.getDepartment().getName() : "";
+            String message = employeeName + " " + deptName + " хэлтэст элссэн";
+            notificationService.createNotificationForUsers(recipientIds, NotificationType.EMPLOYEE_HIRED,
+                    "Шинэ ажилтан", message,
+                    "/employees/" + saved.getId(), saved.getId());
+        }
+
+        return toDto(saved);
     }
 
     public EmployeeDto update(Long id, EmployeeUpdateRequest request) {
         Employee emp = employeeRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Employee not found: " + id));
+        EmployeeStatus oldStatus = emp.getStatus();
         emp.setFirstName(request.getFirstName());
         emp.setLastName(request.getLastName());
         emp.setEmail(request.getEmail());
@@ -119,7 +144,24 @@ public class EmployeeService {
             emp.setUser(null);
         }
 
-        return toDto(employeeRepository.save(emp));
+        Employee saved = employeeRepository.save(emp);
+
+        if (oldStatus != EmployeeStatus.TERMINATED && saved.getStatus() == EmployeeStatus.TERMINATED) {
+            List<User> adminsAndHr = userRepository.findByRoleIn(List.of(UserRole.ADMIN, UserRole.HR));
+            List<Long> recipientIds = new ArrayList<>();
+            for (User u : adminsAndHr) {
+                recipientIds.add(u.getId());
+            }
+            if (!recipientIds.isEmpty()) {
+                String employeeName = saved.getFirstName() + " " + saved.getLastName();
+                String message = employeeName + "-н ажил хасагдлаа";
+                notificationService.createNotificationForUsers(recipientIds, NotificationType.EMPLOYEE_TERMINATED,
+                        "Ажилтан халагдсан", message,
+                        "/employees/" + saved.getId(), saved.getId());
+            }
+        }
+
+        return toDto(saved);
     }
 
     public void delete(Long id) {
