@@ -34,4 +34,13 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     long countByStatusAndDateRange(@Param("status") String status,
                                    @Param("endDate") LocalDate endDate,
                                    @Param("startDate") LocalDate startDate);
+
+    @Query("SELECT lr FROM LeaveRequest lr WHERE lr.employee.id = :employeeId " +
+           "AND lr.status = 'APPROVED' " +
+           "AND lr.leaveType.name = :leaveTypeName " +
+           "AND lr.startDate <= :endDate AND lr.endDate >= :startDate")
+    List<LeaveRequest> findOverlappingApprovedLeaveByType(@Param("employeeId") Long employeeId,
+                                                           @Param("leaveTypeName") String leaveTypeName,
+                                                           @Param("startDate") LocalDate startDate,
+                                                           @Param("endDate") LocalDate endDate);
 }

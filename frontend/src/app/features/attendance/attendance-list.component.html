@@ -16,6 +16,17 @@
     <a routerLink="/leave" routerLinkActive="active" (click)="closeSidebar()">
       <i class="ti ti-calendar-off"></i><span>Чөлөө</span>
     </a>
+    @if (currentUser(); as user) {
+      @if (user.role === 'ADMIN' || user.role === 'HR') {
+        <a routerLink="/payroll" routerLinkActive="active" (click)="closeSidebar()">
+          <i class="ti ti-coin"></i><span>Цалин</span>
+        </a>
+      } @else {
+        <a routerLink="/payroll/my-payslips" routerLinkActive="active" (click)="closeSidebar()">
+          <i class="ti ti-coin"></i><span>Цалингийн хуудас</span>
+        </a>
+      }
+    }
   </nav>
   <div class="sidebar-footer" *ngIf="currentUser() as user">
     <div class="avatar">{{ user.initials }}</div>
