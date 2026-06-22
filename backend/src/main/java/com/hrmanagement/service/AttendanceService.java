@@ -3,13 +3,18 @@ package com.hrmanagement.service;
 import com.hrmanagement.dto.AttendanceDto;
 import com.hrmanagement.entity.Attendance;
 import com.hrmanagement.entity.Employee;
+import com.hrmanagement.entity.User;
 import com.hrmanagement.enums.AttendanceStatus;
+import com.hrmanagement.enums.NotificationType;
+import com.hrmanagement.enums.UserRole;
 import com.hrmanagement.repository.AttendanceRepository;
 import com.hrmanagement.repository.EmployeeRepository;
+import com.hrmanagement.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -17,11 +22,17 @@ public class AttendanceService {
 
     private final AttendanceRepository attendanceRepository;
     private final EmployeeRepository employeeRepository;
+    private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     public AttendanceService(AttendanceRepository attendanceRepository,
-                             EmployeeRepository employeeRepository) {
+                             EmployeeRepository employeeRepository,
+                             UserRepository userRepository,
+                             NotificationService notificationService) {
         this.attendanceRepository = attendanceRepository;
         this.employeeRepository = employeeRepository;
+        this.userRepository = userRepository;
+        this.notificationService = notificationService;
     }
 
     public AttendanceDto checkIn(Long employeeId) {
@@ -39,7 +50,29 @@ public class AttendanceService {
         attendance.setCheckInTime(LocalTime.now());
         attendance.setStatus(AttendanceStatus.PRESENT);
 
-        return toDto(attendanceRepository.save(attendance));
+        Attendance saved = attendanceRepository.save(attendance);
+
+        if (saved.getStatus() == AttendanceStatus.LATE || saved.getStatus() == AttendanceStatus.ABSENT) {
+            List<User> adminsAndHr = userRepository.findByRoleIn(List.of(UserRole.ADMIN, UserRole.HR));
+            List<Long> recipientIds = new ArrayList<>();
+            for (User u : adminsAndHr) {
+                recipientIds.add(u.getId());
+            }
+            if (!recipientIds.isEmpty()) {
+                String employeeName = employee.getFirstName() + " " + employee.getLastName();
+                if (saved.getStatus() == AttendanceStatus.LATE) {
+                    notificationService.createNotificationForUsers(recipientIds, NotificationType.ATTENDANCE_LATE,
+                            "Ажилтан хоцорсон", employeeName + " өнөөдөр хоцорч ирлээ",
+                            "/attendance", saved.getId());
+                } else {
+                    notificationService.createNotificationForUsers(recipientIds, NotificationType.ATTENDANCE_ABSENT,
+                            "Ажилтан ирээгүй", employeeName + " өнөөдөр ажилдаа ирээгүй байна",
+                            "/attendance", saved.getId());
+                }
+            }
+        }
+
+        return toDto(saved);
     }
 
     public AttendanceDto checkOut(Long employeeId) {

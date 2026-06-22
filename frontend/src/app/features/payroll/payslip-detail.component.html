@@ -50,10 +50,7 @@
     </button>
     <div class="topbar-title">Цалингийн хуудас</div>
     <div class="topbar-right">
-      <button class="notif-btn">
-        <i class="ti ti-bell"></i>
-        <span class="notif-dot"></span>
-      </button>
+      <app-notification-bell></app-notification-bell>
       <div class="mobile-avatar" *ngIf="currentUser() as user">{{ user.initials }}</div>
     </div>
   </header>

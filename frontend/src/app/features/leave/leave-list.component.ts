@@ -5,11 +5,12 @@ import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { AuthService, UserProfile } from '../../services/auth.service';
 import { LeaveService, LeaveRequestDto, LeaveTypeDto, LeaveBalanceDto } from '../../services/leave.service';
 import { EmployeeService, EmployeeDto } from '../../services/employee.service';
+import { NotificationBellComponent } from '../../shared/components/notification-bell/notification-bell.component';
 
 @Component({
   selector: 'app-leave-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, NotificationBellComponent],
   templateUrl: './leave-list.component.html',
   styleUrls: ['./leave-list.component.scss']
 })

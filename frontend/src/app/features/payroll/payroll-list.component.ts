@@ -4,11 +4,12 @@ import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService, UserProfile } from '../../services/auth.service';
 import { PayrollService, PayrollRecordDto, PayrollRunSummary } from '../../services/payroll.service';
+import { NotificationBellComponent } from '../../shared/components/notification-bell/notification-bell.component';
 
 @Component({
   selector: 'app-payroll-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, NotificationBellComponent],
   templateUrl: './payroll-list.component.html',
   styleUrls: ['./payroll-list.component.scss']
 })

@@ -5,11 +5,12 @@ import { ReactiveFormsModule, FormsModule, FormBuilder, Validators } from '@angu
 import { AuthService, UserProfile } from '../../services/auth.service';
 import { EmployeeService, EmployeeDto } from '../../services/employee.service';
 import { DepartmentService, DepartmentDto } from '../../services/department.service';
+import { NotificationBellComponent } from '../../shared/components/notification-bell/notification-bell.component';
 
 @Component({
   selector: 'app-employee-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, FormsModule, NotificationBellComponent],
   templateUrl: './employee-list.component.html',
   styleUrls: ['./employee-list.component.scss']
 })
