@@ -1,0 +1,92 @@
+<aside class="sidebar" [class.open]="sidebarOpen()">
+  <div class="sidebar-header">
+    <i class="ti ti-briefcase"></i>
+    <span>HR CORE</span>
+  </div>
+  <nav class="sidebar-nav">
+    <a routerLink="/dashboard" routerLinkActive="active" (click)="closeSidebar()">
+      <i class="ti ti-dashboard"></i><span>Хянах самбар</span>
+    </a>
+    <a routerLink="/payroll/my-payslips" routerLinkActive="active" (click)="closeSidebar()">
+      <i class="ti ti-coin"></i><span>Цалингийн хуудас</span>
+    </a>
+  </nav>
+  <div class="sidebar-footer" *ngIf="currentUser() as user">
+    <div class="avatar">{{ user.initials }}</div>
+    <div class="user-info">
+      <div class="name">{{ user.fullName }}</div>
+      <div class="role">{{ user.roleLabel }}</div>
+    </div>
+    <button class="logout-btn" (click)="logout()" title="Гарах">
+      <i class="ti ti-logout"></i>
+    </button>
+  </div>
+</aside>
+
+<div class="backdrop" *ngIf="sidebarOpen()" (click)="closeSidebar()"></div>
+
+<div class="main">
+  <header class="topbar">
+    <button class="hamburger" (click)="toggleSidebar()">
+      <i class="ti ti-menu-2"></i>
+    </button>
+    <div class="topbar-title">Цалингийн хуудас</div>
+    <div class="topbar-right">
+      <button class="notif-btn">
+        <i class="ti ti-bell"></i>
+        <span class="notif-dot"></span>
+      </button>
+      <div class="mobile-avatar" *ngIf="currentUser() as user">{{ user.initials }}</div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="page-heading">
+      <h1>Цалингийн хуудас</h1>
+      <p>Өөрийн цалингийн түүх</p>
+    </div>
+
+    @if (errorMessage()) {
+      <div class="error-banner">{{ errorMessage() }}</div>
+    }
+
+    <div class="card">
+      @if (loading()) {
+        <div class="table-skeleton">
+          @for (_ of [1,2,3]; track _) {
+            <div class="skeleton-row">
+              <div class="skeleton h-6 w-24"></div>
+              <div class="skeleton h-6 w-20"></div>
+              <div class="skeleton h-6 w-16"></div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Хугацаа</th>
+                <th>Нийт цалин</th>
+                <th>Цэвэр цалин</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (rec of records(); track rec.id) {
+                <tr class="clickable" (click)="viewPayslip(rec.id)">
+                  <td>{{ rec.payPeriodYear }} оны {{ months[rec.payPeriodMonth] }}</td>
+                  <td>{{ rec.grossSalary | number:'1.0-0' }}₮</td>
+                  <td class="net-salary">{{ rec.netSalary | number:'1.0-0' }}₮</td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="3" class="empty">Цалингийн мэдээлэл байхгүй</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  </div>
+</div>

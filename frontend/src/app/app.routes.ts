@@ -26,6 +26,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/leave/leave-list.component').then(m => m.LeaveListComponent),
     canActivate: [authGuard]
   },
+  {
+    path: 'payroll',
+    loadChildren: () => import('./features/payroll/payroll.routes').then(m => m.payrollRoutes)
+  },
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
   { path: '**', redirectTo: '/dashboard' }
 ];
