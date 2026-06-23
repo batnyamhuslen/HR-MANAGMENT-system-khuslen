@@ -10,11 +10,11 @@ import { NotificationService, AppNotification } from '../../../services/notifica
       <button class="notif-btn" (click)="toggleDropdown()">
         <i class="ti ti-bell"></i>
         @if (unreadCount() > 0) {
-          <span class="notif-dot"></span>
+          <span class="notif-dot" [class.pulsing]="unreadCount() > 0"></span>
         }
       </button>
       @if (isOpen()) {
-        <div class="notif-dropdown">
+        <div class="notif-dropdown anim-dropdown-open">
           <div class="notif-header">
             <span class="notif-header-title">Мэдэгдэл</span>
             @if (unreadCount() > 0) {
@@ -22,8 +22,8 @@ import { NotificationService, AppNotification } from '../../../services/notifica
             }
           </div>
           <div class="notif-list">
-            @for (notif of notifications(); track notif.id) {
-              <div class="notif-item" [class.unread]="!notif.isRead" (click)="handleClick(notif)">
+            @for (notif of notifications(); track notif.id; let i = $index) {
+              <div class="notif-item notif-stagger" [class.unread]="!notif.isRead" [style.--stagger-index]="i" (click)="handleClick(notif)">
                 <div class="notif-title">{{ notif.title }}</div>
                 <div class="notif-message">{{ notif.message }}</div>
                 <div class="notif-time">{{ relativeTime(notif.createdAt) }}</div>

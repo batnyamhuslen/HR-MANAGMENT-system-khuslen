@@ -1,22 +1,17 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { AuthService, UserProfile } from '../../services/auth.service';
 import { PayrollService, PayrollRecordDto, PayrollRunSummary } from '../../services/payroll.service';
-import { NotificationBellComponent } from '../../shared/components/notification-bell/notification-bell.component';
 
 @Component({
   selector: 'app-payroll-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, NotificationBellComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './payroll-list.component.html',
   styleUrls: ['./payroll-list.component.scss']
 })
 export class PayrollListComponent implements OnInit {
-  sidebarOpen = signal(false);
-  currentUser = signal<UserProfile | null>(null);
-
   year = signal(new Date().getFullYear());
   month = signal(new Date().getMonth() + 1);
   records = signal<PayrollRecordDto[]>([]);
@@ -41,20 +36,11 @@ export class PayrollListComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private authService: AuthService,
     private payrollService: PayrollService
   ) {}
 
   ngOnInit(): void {
-    this.loadCurrentUser();
     this.loadRecords();
-  }
-
-  private loadCurrentUser(): void {
-    this.authService.getProfile().subscribe({
-      next: (user) => this.currentUser.set(user),
-      error: () => {}
-    });
   }
 
   loadRecords(): void {
@@ -141,18 +127,5 @@ export class PayrollListComponent implements OnInit {
       case 'PAID': return 'Төлсөн';
       default: return status;
     }
-  }
-
-  toggleSidebar(): void {
-    this.sidebarOpen.update(v => !v);
-  }
-
-  closeSidebar(): void {
-    this.sidebarOpen.set(false);
-  }
-
-  logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/auth/login']);
   }
 }

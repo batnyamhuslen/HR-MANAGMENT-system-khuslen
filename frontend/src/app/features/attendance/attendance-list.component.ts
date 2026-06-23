@@ -1,20 +1,15 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
-import { AuthService, UserProfile } from '../../services/auth.service';
 import { AttendanceService, AttendanceDto } from '../../services/attendance.service';
-import { NotificationBellComponent } from '../../shared/components/notification-bell/notification-bell.component';
 
 @Component({
   selector: 'app-attendance-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, NotificationBellComponent],
+  imports: [CommonModule],
   templateUrl: './attendance-list.component.html',
   styleUrls: ['./attendance-list.component.scss']
 })
 export class AttendanceListComponent implements OnInit {
-  sidebarOpen = signal(false);
-  currentUser = signal<UserProfile | null>(null);
   records = signal<AttendanceDto[]>([]);
   selectedDate = signal(this.todayString());
   loading = signal(true);
@@ -22,13 +17,10 @@ export class AttendanceListComponent implements OnInit {
   actionLoading = signal<number | null>(null);
 
   constructor(
-    private router: Router,
-    private authService: AuthService,
     private attendanceService: AttendanceService
   ) {}
 
   ngOnInit(): void {
-    this.loadCurrentUser();
     this.loadAttendance();
   }
 
@@ -38,13 +30,6 @@ export class AttendanceListComponent implements OnInit {
     const m = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
     return y + '-' + m + '-' + day;
-  }
-
-  private loadCurrentUser(): void {
-    this.authService.getProfile().subscribe({
-      next: (user) => this.currentUser.set(user),
-      error: () => {}
-    });
   }
 
   private loadAttendance(): void {
@@ -159,19 +144,6 @@ export class AttendanceListComponent implements OnInit {
   formatTime(time: string | null): string {
     if (!time) return '-';
     return time.substring(0, 5);
-  }
-
-  toggleSidebar(): void {
-    this.sidebarOpen.update(v => !v);
-  }
-
-  closeSidebar(): void {
-    this.sidebarOpen.set(false);
-  }
-
-  logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/auth/login']);
   }
 
   displayDateLabel(): string {
