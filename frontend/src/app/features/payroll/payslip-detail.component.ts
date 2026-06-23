@@ -1,20 +1,17 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule, ActivatedRoute } from '@angular/router';
-import { AuthService, UserProfile } from '../../services/auth.service';
+import { Router, ActivatedRoute } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 import { PayrollService, PayrollRecordDto } from '../../services/payroll.service';
-import { NotificationBellComponent } from '../../shared/components/notification-bell/notification-bell.component';
 
 @Component({
   selector: 'app-payslip-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, NotificationBellComponent],
+  imports: [CommonModule],
   templateUrl: './payslip-detail.component.html',
   styleUrls: ['./payslip-detail.component.scss']
 })
 export class PayslipDetailComponent implements OnInit {
-  sidebarOpen = signal(false);
-  currentUser = signal<UserProfile | null>(null);
   record = signal<PayrollRecordDto | null>(null);
   loading = signal(true);
   errorMessage = signal('');
@@ -30,17 +27,7 @@ export class PayslipDetailComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.loadCurrentUser();
-  }
-
-  private loadCurrentUser(): void {
-    this.authService.getProfile().subscribe({
-      next: (user) => {
-        this.currentUser.set(user);
-        this.loadPayslip();
-      },
-      error: () => {}
-    });
+    this.loadPayslip();
   }
 
   private loadPayslip(): void {
@@ -63,7 +50,7 @@ export class PayslipDetailComponent implements OnInit {
   }
 
   isManagementRole(): boolean {
-    const role = this.currentUser()?.role;
+    const role = this.authService.getRole();
     return role === 'ADMIN' || role === 'HR';
   }
 
@@ -73,18 +60,5 @@ export class PayslipDetailComponent implements OnInit {
     } else {
       this.router.navigate(['/payroll/my-payslips']);
     }
-  }
-
-  toggleSidebar(): void {
-    this.sidebarOpen.update(v => !v);
-  }
-
-  closeSidebar(): void {
-    this.sidebarOpen.set(false);
-  }
-
-  logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/auth/login']);
   }
 }

@@ -1,20 +1,17 @@
 import { Component, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
 import { AuthService, UserProfile } from '../../services/auth.service';
 import { DashboardService, DashboardStats, EmployeeDashboardStats, SalaryTrendPoint } from '../../services/dashboard.service';
 import { LeaveService, PendingLeaveRequest } from '../../services/leave.service';
-import { NotificationBellComponent } from '../../shared/components/notification-bell/notification-bell.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, NotificationBellComponent],
+  imports: [CommonModule],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit {
-  sidebarOpen = signal(false);
   stats = signal<DashboardStats | null>(null);
   myStats = signal<EmployeeDashboardStats | null>(null);
   salaryTrend = signal<SalaryTrendPoint[]>([]);
@@ -31,7 +28,6 @@ export class DashboardComponent implements OnInit {
   });
 
   constructor(
-    private router: Router,
     private authService: AuthService,
     private dashboardService: DashboardService,
     private leaveService: LeaveService
@@ -83,14 +79,6 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  toggleSidebar(): void {
-    this.sidebarOpen.update(v => !v);
-  }
-
-  closeSidebar(): void {
-    this.sidebarOpen.set(false);
-  }
-
   approveLeave(requestId: number): void {
     this.leaveService.approve(requestId).subscribe({
       next: () => {
@@ -119,10 +107,5 @@ export class DashboardComponent implements OnInit {
 
   isLastMonth(index: number): boolean {
     return index === this.salaryTrend().length - 1;
-  }
-
-  logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/auth/login']);
   }
 }

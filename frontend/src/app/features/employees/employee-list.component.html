@@ -1,169 +1,114 @@
-<aside class="sidebar" [class.open]="sidebarOpen()">
-  <div class="sidebar-header">
-    <i class="ti ti-briefcase"></i>
-    <span>HR CORE</span>
+<div class="content">
+  <div class="page-heading">
+    <h1>Ажилтнууд</h1>
+    <p>Байгууллагын ажилтнуудын бүртгэл</p>
   </div>
-  <nav class="sidebar-nav">
-    <a routerLink="/dashboard" routerLinkActive="active" (click)="closeSidebar()">
-      <i class="ti ti-dashboard"></i><span>Хянах самбар</span>
-    </a>
-    <a routerLink="/employees" routerLinkActive="active" (click)="closeSidebar()">
-      <i class="ti ti-users"></i><span>Ажилтнууд</span>
-    </a>
-    <a routerLink="/attendance" routerLinkActive="active" (click)="closeSidebar()">
-      <i class="ti ti-calendar-check"></i><span>Ирц</span>
-    </a>
-    <a routerLink="/leave" routerLinkActive="active" (click)="closeSidebar()">
-      <i class="ti ti-calendar-off"></i><span>Чөлөө</span>
-    </a>
-    @if (isHrOrAdmin()) {
-      <a routerLink="/payroll" routerLinkActive="active" (click)="closeSidebar()">
-        <i class="ti ti-coin"></i><span>Цалин</span>
-      </a>
-    } @else {
-      <a routerLink="/payroll/my-payslips" routerLinkActive="active" (click)="closeSidebar()">
-        <i class="ti ti-coin"></i><span>Цалингийн хуудас</span>
-      </a>
-    }
-  </nav>
-  <div class="sidebar-footer" *ngIf="currentUser() as user">
-    <div class="avatar">{{ user.initials }}</div>
-    <div class="user-info">
-      <div class="name">{{ user.fullName }}</div>
-      <div class="role">{{ user.roleLabel }}</div>
-    </div>
-    <button class="logout-btn" (click)="logout()" title="Гарах">
-      <i class="ti ti-logout"></i>
-    </button>
-  </div>
-</aside>
 
-<div class="backdrop" *ngIf="sidebarOpen()" (click)="closeSidebar()"></div>
-
-<div class="main">
-  <header class="topbar">
-    <button class="hamburger" (click)="toggleSidebar()">
-      <i class="ti ti-menu-2"></i>
-    </button>
-    <div class="search-box">
-      <i class="ti ti-search"></i>
-      <input type="text" placeholder="Хайх..." [(ngModel)]="searchQuery">
-    </div>
-    <div class="topbar-right">
-      <app-notification-bell></app-notification-bell>
-      <div class="mobile-avatar" *ngIf="currentUser() as user">{{ user.initials }}</div>
-    </div>
-  </header>
-
-  <div class="content">
-    <div class="page-heading">
-      <h1>Ажилтнууд</h1>
-      <p>Байгууллагын ажилтнуудын бүртгэл</p>
-    </div>
-
-    <div class="toolbar">
-      <div class="toolbar-left">
-        <span class="result-count">Нийт {{ totalElements() }} ажилтан</span>
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <div class="search-inline">
+        <i class="ti ti-search"></i>
+        <input type="text" placeholder="Хайх..." [(ngModel)]="searchQuery">
       </div>
-      @if (isHrOrAdmin()) {
-        <button class="btn-primary" (click)="openAddModal()">
-          <i class="ti ti-plus"></i> Ажилтан нэмэх
-        </button>
-      }
+      <span class="result-count">Нийт {{ totalElements() }} ажилтан</span>
     </div>
-
-    @if (errorMessage()) {
-      <div class="error-banner">{{ errorMessage() }}</div>
+    @if (isHrOrAdmin()) {
+      <button class="btn-primary" (click)="openAddModal()">
+        <i class="ti ti-plus"></i> Ажилтан нэмэх
+      </button>
     }
+  </div>
 
-    <div class="card">
-      @if (loading()) {
-        <div class="table-skeleton">
-          @for (_ of [1,2,3,4,5]; track _) {
-            <div class="skeleton-row">
-              <div class="skeleton h-6 w-12"></div>
-              <div class="skeleton h-6 w-20"></div>
-              <div class="skeleton h-6 w-32"></div>
-              <div class="skeleton h-6 w-24"></div>
-              <div class="skeleton h-6 w-28"></div>
-              <div class="skeleton h-6 w-40"></div>
-              <div class="skeleton h-6 w-20"></div>
+  @if (errorMessage()) {
+    <div class="error-banner">{{ errorMessage() }}</div>
+  }
+
+  <div class="card">
+    @if (loading()) {
+      <div class="table-skeleton">
+        @for (_ of [1,2,3,4,5]; track _) {
+          <div class="skeleton-row">
+            <div class="skeleton h-6 w-12"></div>
+            <div class="skeleton h-6 w-20"></div>
+            <div class="skeleton h-6 w-32"></div>
+            <div class="skeleton h-6 w-24"></div>
+            <div class="skeleton h-6 w-28"></div>
+            <div class="skeleton h-6 w-40"></div>
+            <div class="skeleton h-6 w-20"></div>
+            @if (isHrOrAdmin()) {
+              <div class="skeleton h-6 w-16"></div>
+            }
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Код</th>
+              <th>Овог Нэр</th>
+              <th>Албан тушаал</th>
+              <th>Хэлтэс</th>
+              <th>Имэйл</th>
+              <th>Статус</th>
               @if (isHrOrAdmin()) {
-                <div class="skeleton h-6 w-16"></div>
+                <th>Үйлдэл</th>
               }
-            </div>
-          }
-        </div>
-      } @else {
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Код</th>
-                <th>Овог Нэр</th>
-                <th>Албан тушаал</th>
-                <th>Хэлтэс</th>
-                <th>Имэйл</th>
-                <th>Статус</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (emp of filteredEmployees(); track emp.id; let i = $index) {
+              <tr [style.--stagger-index]="i" [class.removing]="emp.id === removingId()" class="stagger-enter">
+                <td>{{ i + 1 }}</td>
+                <td class="code">{{ emp.employeeCode }}</td>
+                <td class="name">{{ emp.lastName }} {{ emp.firstName }}</td>
+                <td>{{ emp.position || '-' }}</td>
+                <td>{{ emp.departmentName || '-' }}</td>
+                <td>{{ emp.email }}</td>
+                <td><span class="badge {{ statusClass(emp.status) }}">{{ statusLabel(emp.status) }}</span></td>
                 @if (isHrOrAdmin()) {
-                  <th>Үйлдэл</th>
+                  <td>
+                    @if (deleteConfirmId() === emp.id) {
+                      <div class="confirm-delete">
+                        <span class="confirm-text">Устгах уу?</span>
+                        <button class="icon-btn confirm-yes" (click)="executeDelete(emp.id)" title="Тийм">
+                          <i class="ti ti-check"></i>
+                        </button>
+                        <button class="icon-btn confirm-no" (click)="cancelDelete()" title="Үгүй">
+                          <i class="ti ti-x"></i>
+                        </button>
+                      </div>
+                    } @else {
+                      <button class="icon-btn delete-btn" (click)="confirmDelete(emp.id)" title="Устгах">
+                        <i class="ti ti-trash"></i>
+                      </button>
+                    }
+                  </td>
                 }
               </tr>
-            </thead>
-            <tbody>
-              @for (emp of filteredEmployees(); track emp.id; let i = $index) {
-                <tr>
-                  <td>{{ i + 1 }}</td>
-                  <td class="code">{{ emp.employeeCode }}</td>
-                  <td class="name">{{ emp.lastName }} {{ emp.firstName }}</td>
-                  <td>{{ emp.position || '-' }}</td>
-                  <td>{{ emp.departmentName || '-' }}</td>
-                  <td>{{ emp.email }}</td>
-                  <td><span class="badge {{ statusClass(emp.status) }}">{{ statusLabel(emp.status) }}</span></td>
-                  @if (isHrOrAdmin()) {
-                    <td>
-                      @if (deleteConfirmId() === emp.id) {
-                        <div class="confirm-delete">
-                          <span class="confirm-text">Устгах уу?</span>
-                          <button class="icon-btn confirm-yes" (click)="executeDelete(emp.id)" title="Тийм">
-                            <i class="ti ti-check"></i>
-                          </button>
-                          <button class="icon-btn confirm-no" (click)="cancelDelete()" title="Үгүй">
-                            <i class="ti ti-x"></i>
-                          </button>
-                        </div>
-                      } @else {
-                        <button class="icon-btn delete-btn" (click)="confirmDelete(emp.id)" title="Устгах">
-                          <i class="ti ti-trash"></i>
-                        </button>
-                      }
-                    </td>
-                  }
-                </tr>
-              } @empty {
-                <tr>
-                  <td [attr.colspan]="isHrOrAdmin() ? 8 : 7" class="empty">Ажилтан олдсонгүй</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-        <div class="pagination">
-          <button class="page-btn" (click)="prevPage()" [disabled]="currentPage() === 0">
-            <i class="ti ti-chevron-left"></i> Өмнөх
-          </button>
-          <span class="page-info">{{ currentPage() + 1 }} / {{ totalPages() }}</span>
-          <button class="page-btn" (click)="nextPage()" [disabled]="currentPage() >= totalPages() - 1">
-            Дараах <i class="ti ti-chevron-right"></i>
-          </button>
-        </div>
-      }
-    </div>
+            } @empty {
+              <tr>
+                <td [attr.colspan]="isHrOrAdmin() ? 8 : 7" class="empty">Ажилтан олдсонгүй</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <button class="page-btn" (click)="prevPage()" [disabled]="currentPage() === 0">
+          <i class="ti ti-chevron-left"></i> Өмнөх
+        </button>
+        <span class="page-info">{{ currentPage() + 1 }} / {{ totalPages() }}</span>
+        <button class="page-btn" (click)="nextPage()" [disabled]="currentPage() >= totalPages() - 1">
+          Дараах <i class="ti ti-chevron-right"></i>
+        </button>
+      </div>
+    }
   </div>
 </div>
 
-<!-- Add Employee Modal -->
 @if (showModal()) {
   <div class="modal-backdrop" (click)="closeModal()"></div>
   <div class="modal-container">

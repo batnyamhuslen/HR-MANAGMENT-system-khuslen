@@ -1,22 +1,19 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { ReactiveFormsModule, FormsModule, FormBuilder, Validators } from '@angular/forms';
-import { AuthService, UserProfile } from '../../services/auth.service';
+import { AuthService } from '../../services/auth.service';
 import { EmployeeService, EmployeeDto } from '../../services/employee.service';
 import { DepartmentService, DepartmentDto } from '../../services/department.service';
-import { NotificationBellComponent } from '../../shared/components/notification-bell/notification-bell.component';
 
 @Component({
   selector: 'app-employee-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, FormsModule, NotificationBellComponent],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, FormsModule],
   templateUrl: './employee-list.component.html',
   styleUrls: ['./employee-list.component.scss']
 })
 export class EmployeeListComponent implements OnInit {
-  sidebarOpen = signal(false);
-  currentUser = signal<UserProfile | null>(null);
   allEmployees = signal<EmployeeDto[]>([]);
   departments = signal<DepartmentDto[]>([]);
   searchQuery = signal('');
@@ -32,9 +29,9 @@ export class EmployeeListComponent implements OnInit {
   employeeForm;
 
   deleteConfirmId = signal<number | null>(null);
+  removingId = signal<number | null>(null);
 
   constructor(
-    private router: Router,
     private fb: FormBuilder,
     private authService: AuthService,
     private employeeService: EmployeeService,
@@ -57,16 +54,8 @@ export class EmployeeListComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadCurrentUser();
     this.loadDepartments();
     this.loadEmployees();
-  }
-
-  private loadCurrentUser(): void {
-    this.authService.getProfile().subscribe({
-      next: (user) => this.currentUser.set(user),
-      error: () => {}
-    });
   }
 
   private loadDepartments(): void {
@@ -116,6 +105,10 @@ export class EmployeeListComponent implements OnInit {
       }
     }
     return result;
+  }
+
+  trackById(index: number, item: any): number {
+    return item.id;
   }
 
   prevPage(): void {
@@ -186,16 +179,21 @@ export class EmployeeListComponent implements OnInit {
   }
 
   executeDelete(id: number): void {
-    this.employeeService.deleteEmployee(id).subscribe({
-      next: () => {
-        this.deleteConfirmId.set(null);
-        this.loadEmployees();
-      },
-      error: (err) => {
-        this.deleteConfirmId.set(null);
-        this.errorMessage.set(err.error?.message || 'Устгахад алдаа гарлаа');
-      }
-    });
+    this.removingId.set(id);
+    setTimeout(() => {
+      this.employeeService.deleteEmployee(id).subscribe({
+        next: () => {
+          this.deleteConfirmId.set(null);
+          this.removingId.set(null);
+          this.loadEmployees();
+        },
+        error: (err) => {
+          this.deleteConfirmId.set(null);
+          this.removingId.set(null);
+          this.errorMessage.set(err.error?.message || 'Устгахад алдаа гарлаа');
+        }
+      });
+    }, 200);
   }
 
   statusLabel(status: string): string {
@@ -214,18 +212,5 @@ export class EmployeeListComponent implements OnInit {
       case 'TERMINATED': return 'badge-terminated';
       default: return '';
     }
-  }
-
-  toggleSidebar(): void {
-    this.sidebarOpen.update(v => !v);
-  }
-
-  closeSidebar(): void {
-    this.sidebarOpen.set(false);
-  }
-
-  logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/auth/login']);
   }
 }

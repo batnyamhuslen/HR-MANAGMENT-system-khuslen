@@ -1,154 +1,94 @@
-<aside class="sidebar" [class.open]="sidebarOpen()">
-  <div class="sidebar-header">
-    <i class="ti ti-briefcase"></i>
-    <span>HR CORE</span>
+@if (errorMessage()) {
+  <div class="error-banner">{{ errorMessage() }}</div>
+}
+
+@if (loading()) {
+  <div class="skeleton-card">
+    <div class="skeleton h-8 w-48 mb-4"></div>
+    <div class="skeleton h-6 w-full mb-3"></div>
+    <div class="skeleton h-6 w-full mb-3"></div>
+    <div class="skeleton h-6 w-full mb-3"></div>
+    <div class="skeleton h-10 w-full mt-4"></div>
   </div>
-  <nav class="sidebar-nav">
-    @if (isManagementRole()) {
-      <a routerLink="/dashboard" routerLinkActive="active" (click)="closeSidebar()">
-        <i class="ti ti-dashboard"></i><span>Хянах самбар</span>
-      </a>
-      <a routerLink="/employees" routerLinkActive="active" (click)="closeSidebar()">
-        <i class="ti ti-users"></i><span>Ажилтнууд</span>
-      </a>
-      <a routerLink="/attendance" routerLinkActive="active" (click)="closeSidebar()">
-        <i class="ti ti-calendar-check"></i><span>Ирц</span>
-      </a>
-      <a routerLink="/leave" routerLinkActive="active" (click)="closeSidebar()">
-        <i class="ti ti-calendar-off"></i><span>Чөлөө</span>
-      </a>
-      <a routerLink="/payroll" routerLinkActive="active" (click)="closeSidebar()">
-        <i class="ti ti-coin"></i><span>Цалин</span>
-      </a>
-    } @else {
-      <a routerLink="/dashboard" routerLinkActive="active" (click)="closeSidebar()">
-        <i class="ti ti-dashboard"></i><span>Хянах самбар</span>
-      </a>
-      <a routerLink="/payroll/my-payslips" routerLinkActive="active" (click)="closeSidebar()">
-        <i class="ti ti-coin"></i><span>Цалингийн хуудас</span>
-      </a>
-    }
-  </nav>
-  <div class="sidebar-footer" *ngIf="currentUser() as user">
-    <div class="avatar">{{ user.initials }}</div>
-    <div class="user-info">
-      <div class="name">{{ user.fullName }}</div>
-      <div class="role">{{ user.roleLabel }}</div>
-    </div>
-    <button class="logout-btn" (click)="logout()" title="Гарах">
-      <i class="ti ti-logout"></i>
-    </button>
-  </div>
-</aside>
+}
 
-<div class="backdrop" *ngIf="sidebarOpen()" (click)="closeSidebar()"></div>
+@if (record(); as rec) {
+  <button class="back-btn" (click)="goBack()">
+    <i class="ti ti-arrow-left"></i> Буцах
+  </button>
 
-<div class="main">
-  <header class="topbar">
-    <button class="hamburger" (click)="toggleSidebar()">
-      <i class="ti ti-menu-2"></i>
-    </button>
-    <div class="topbar-title">Цалингийн хуудас</div>
-    <div class="topbar-right">
-      <app-notification-bell></app-notification-bell>
-      <div class="mobile-avatar" *ngIf="currentUser() as user">{{ user.initials }}</div>
-    </div>
-  </header>
-
-  <div class="content">
-    @if (errorMessage()) {
-      <div class="error-banner">{{ errorMessage() }}</div>
-    }
-
-    @if (loading()) {
-      <div class="skeleton-card">
-        <div class="skeleton h-8 w-48 mb-4"></div>
-        <div class="skeleton h-6 w-full mb-3"></div>
-        <div class="skeleton h-6 w-full mb-3"></div>
-        <div class="skeleton h-6 w-full mb-3"></div>
-        <div class="skeleton h-10 w-full mt-4"></div>
-      </div>
-    }
-
-    @if (record(); as rec) {
-      <button class="back-btn" (click)="goBack()">
-        <i class="ti ti-arrow-left"></i> Буцах
-      </button>
-
-      <div class="payslip-card">
-        <div class="payslip-header">
-          <div class="payslip-title">
-            <i class="ti ti-receipt-2"></i>
-            <div>
-              <h2>ЦАЛИНГИЙН ХУУДАС</h2>
-              <p>{{ rec.payPeriodYear }} оны {{ months[rec.payPeriodMonth] }}</p>
-            </div>
-          </div>
-          <div class="payslip-employee">
-            <span class="emp-label">Ажилтан:</span>
-            <span class="emp-value">{{ rec.employeeName }}</span>
-          </div>
-        </div>
-
-        <div class="payslip-body">
-          <div class="payslip-row plus">
-            <span class="row-label"><i class="ti ti-coin"></i> Суурь цалин</span>
-            <span class="row-value">{{ rec.baseSalary | number:'1.0-0' }}₮</span>
-          </div>
-
-          @if (rec.overtimePay > 0) {
-            <div class="payslip-row plus">
-              <span class="row-label"><i class="ti ti-clock"></i> Илүү цагийн нэмэгдэл</span>
-              <span class="row-value">+{{ rec.overtimePay | number:'1.0-0' }}₮</span>
-            </div>
-          }
-
-          @if (rec.allowances > 0) {
-            <div class="payslip-row plus">
-              <span class="row-label"><i class="ti ti-gift"></i> Нэмэгдэл</span>
-              <span class="row-value">+{{ rec.allowances | number:'1.0-0' }}₮</span>
-            </div>
-          }
-
-          @if (rec.unpaidLeaveDeduction > 0) {
-            <div class="payslip-row minus">
-              <span class="row-label"><i class="ti ti-calendar-off"></i> Цалингүй чөлөө</span>
-              <span class="row-value">-{{ rec.unpaidLeaveDeduction | number:'1.0-0' }}₮</span>
-            </div>
-          }
-
-          <div class="payslip-separator"></div>
-
-          <div class="payslip-row subtotal">
-            <span class="row-label">Нийт цалин (Gross)</span>
-            <span class="row-value">{{ rec.grossSalary | number:'1.0-0' }}₮</span>
-          </div>
-
-          <div class="payslip-row minus">
-            <span class="row-label"><i class="ti ti-shield"></i> Нийгмийн даатгал (НДШ)</span>
-            <span class="row-value">-{{ rec.socialInsuranceEmployee | number:'1.0-0' }}₮</span>
-          </div>
-
-          <div class="payslip-row minus">
-            <span class="row-label"><i class="ti ti-file-text"></i> Хүн орлогын албан татвар (ХХОАТ)</span>
-            <span class="row-value">-{{ rec.incomeTax | number:'1.0-0' }}₮</span>
-          </div>
-
-          @if (rec.otherDeductions > 0) {
-            <div class="payslip-row minus">
-              <span class="row-label"><i class="ti ti-minus"></i> Бусад суутгал</span>
-              <span class="row-value">-{{ rec.otherDeductions | number:'1.0-0' }}₮</span>
-            </div>
-          }
-
-          <div class="payslip-separator thick"></div>
-
-          <div class="payslip-row net">
-            <span class="row-label">Цэвэр цалин (Net)</span>
-            <span class="row-value net-amount">{{ rec.netSalary | number:'1.0-0' }}₮</span>
-          </div>
+  <div class="payslip-card">
+    <div class="payslip-header">
+      <div class="payslip-title">
+        <i class="ti ti-receipt-2"></i>
+        <div>
+          <h2>ЦАЛИНГИЙН ХУУДАС</h2>
+          <p>{{ rec.payPeriodYear }} оны {{ months[rec.payPeriodMonth] }}</p>
         </div>
       </div>
-    }
+      <div class="payslip-employee">
+        <span class="emp-label">Ажилтан:</span>
+        <span class="emp-value">{{ rec.employeeName }}</span>
+      </div>
+    </div>
+
+    <div class="payslip-body">
+      <div class="payslip-row plus">
+        <span class="row-label"><i class="ti ti-coin"></i> Суурь цалин</span>
+        <span class="row-value">{{ rec.baseSalary | number:'1.0-0' }}₮</span>
+      </div>
+
+      @if (rec.overtimePay > 0) {
+        <div class="payslip-row plus">
+          <span class="row-label"><i class="ti ti-clock"></i> Илүү цагийн нэмэгдэл</span>
+          <span class="row-value">+{{ rec.overtimePay | number:'1.0-0' }}₮</span>
+        </div>
+      }
+
+      @if (rec.allowances > 0) {
+        <div class="payslip-row plus">
+          <span class="row-label"><i class="ti ti-gift"></i> Нэмэгдэл</span>
+          <span class="row-value">+{{ rec.allowances | number:'1.0-0' }}₮</span>
+        </div>
+      }
+
+      @if (rec.unpaidLeaveDeduction > 0) {
+        <div class="payslip-row minus">
+          <span class="row-label"><i class="ti ti-calendar-off"></i> Цалингүй чөлөө</span>
+          <span class="row-value">-{{ rec.unpaidLeaveDeduction | number:'1.0-0' }}₮</span>
+        </div>
+      }
+
+      <div class="payslip-separator"></div>
+
+      <div class="payslip-row subtotal">
+        <span class="row-label">Нийт цалин (Gross)</span>
+        <span class="row-value">{{ rec.grossSalary | number:'1.0-0' }}₮</span>
+      </div>
+
+      <div class="payslip-row minus">
+        <span class="row-label"><i class="ti ti-shield"></i> Нийгмийн даатгал (НДШ)</span>
+        <span class="row-value">-{{ rec.socialInsuranceEmployee | number:'1.0-0' }}₮</span>
+      </div>
+
+      <div class="payslip-row minus">
+        <span class="row-label"><i class="ti ti-file-text"></i> Хүн орлогын албан татвар (ХХОАТ)</span>
+        <span class="row-value">-{{ rec.incomeTax | number:'1.0-0' }}₮</span>
+      </div>
+
+      @if (rec.otherDeductions > 0) {
+        <div class="payslip-row minus">
+          <span class="row-label"><i class="ti ti-minus"></i> Бусад суутгал</span>
+          <span class="row-value">-{{ rec.otherDeductions | number:'1.0-0' }}₮</span>
+        </div>
+      }
+
+      <div class="payslip-separator thick"></div>
+
+      <div class="payslip-row net">
+        <span class="row-label">Цэвэр цалин (Net)</span>
+        <span class="row-value net-amount">{{ rec.netSalary | number:'1.0-0' }}₮</span>
+      </div>
+    </div>
   </div>
-</div>
+}

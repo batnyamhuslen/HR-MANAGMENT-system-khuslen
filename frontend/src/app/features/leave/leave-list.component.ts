@@ -1,22 +1,17 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { AuthService, UserProfile } from '../../services/auth.service';
 import { LeaveService, LeaveRequestDto, LeaveTypeDto, LeaveBalanceDto } from '../../services/leave.service';
 import { EmployeeService, EmployeeDto } from '../../services/employee.service';
-import { NotificationBellComponent } from '../../shared/components/notification-bell/notification-bell.component';
 
 @Component({
   selector: 'app-leave-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, NotificationBellComponent],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './leave-list.component.html',
   styleUrls: ['./leave-list.component.scss']
 })
 export class LeaveListComponent implements OnInit {
-  sidebarOpen = signal(false);
-  currentUser = signal<UserProfile | null>(null);
   requests = signal<LeaveRequestDto[]>([]);
   balances = signal<LeaveBalanceDto[]>([]);
   leaveTypes = signal<LeaveTypeDto[]>([]);
@@ -30,9 +25,7 @@ export class LeaveListComponent implements OnInit {
   leaveForm;
 
   constructor(
-    private router: Router,
     private fb: FormBuilder,
-    private authService: AuthService,
     private leaveService: LeaveService,
     private employeeService: EmployeeService
   ) {
@@ -46,15 +39,7 @@ export class LeaveListComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadCurrentUser();
     this.loadData();
-  }
-
-  private loadCurrentUser(): void {
-    this.authService.getProfile().subscribe({
-      next: (user) => this.currentUser.set(user),
-      error: () => {}
-    });
   }
 
   private loadData(): void {
@@ -154,8 +139,11 @@ export class LeaveListComponent implements OnInit {
   }
 
   isHrOrAdmin(): boolean {
-    const role = this.authService.getRole();
-    return role === 'ADMIN' || role === 'HR';
+    if (typeof localStorage !== 'undefined') {
+      const role = localStorage.getItem('role');
+      return role === 'ADMIN' || role === 'HR';
+    }
+    return false;
   }
 
   statusLabel(status: string): string {
@@ -176,19 +164,6 @@ export class LeaveListComponent implements OnInit {
       case 'CANCELLED': return 'badge-cancelled';
       default: return '';
     }
-  }
-
-  toggleSidebar(): void {
-    this.sidebarOpen.update(v => !v);
-  }
-
-  closeSidebar(): void {
-    this.sidebarOpen.set(false);
-  }
-
-  logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/auth/login']);
   }
 
   get leaveTypeName(): string {
